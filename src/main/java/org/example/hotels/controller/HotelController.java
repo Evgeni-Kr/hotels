@@ -3,12 +3,10 @@ package org.example.hotels.controller;
 import org.example.hotels.dto.HotelBriefDto;
 import org.example.hotels.dto.HotelCreateRequestDto;
 import org.example.hotels.dto.HotelDetailDto;
-import org.example.hotels.entity.Amenity;
 import org.example.hotels.service.HotelService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
