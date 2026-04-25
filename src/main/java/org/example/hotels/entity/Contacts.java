@@ -7,6 +7,14 @@ public class Contacts {
     String phone;
     String email;
 
+    public Contacts(String phone, String email) {
+        this.phone = phone;
+        this.email = email;
+    }
+
+    public Contacts() {
+    }
+
     public String getPhone() {
         return phone;
     }

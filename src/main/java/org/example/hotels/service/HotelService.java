@@ -1,66 +1,83 @@
 package org.example.hotels.service;
 
 import org.example.hotels.dto.HotelBriefDto;
+import org.example.hotels.dto.HotelCreateRequestDto;
 import org.example.hotels.dto.HotelDetailDto;
-import org.example.hotels.entity.Address;
-import org.example.hotels.entity.Hotel;
+import org.example.hotels.entity.*;
+import org.example.hotels.exception.NotFoundException;
 import org.example.hotels.repository.AmenityRepository;
 import org.example.hotels.repository.HotelRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.admin.SpringApplicationAdminMXBeanRegistrar;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Service
 public class HotelService {
 
-    private HotelRepository hotelRepository;
-    private AmenityRepository amenityRepository;
-    private SpringApplicationAdminMXBeanRegistrar springApplicationAdminRegistrar;
+    private final HotelRepository hotelRepository;
+    private final AmenityRepository amenityRepository;
+    private final HotelConverterService hotelConverterService;
 
-    public HotelService() {
-
-    }
     @Autowired
-    public HotelService(HotelRepository hotelRepository, AmenityRepository amenityRepository, SpringApplicationAdminMXBeanRegistrar springApplicationAdminRegistrar) {
+    public HotelService(HotelRepository hotelRepository,
+                        AmenityRepository amenityRepository,
+                        HotelConverterService hotelConverterService) {
         this.hotelRepository = hotelRepository;
         this.amenityRepository = amenityRepository;
-        this.springApplicationAdminRegistrar = springApplicationAdminRegistrar;
+        this.hotelConverterService = hotelConverterService;
     }
-    //Получает все отели из бд и передаёт DTO
+
+    @Transactional(readOnly = true)
     public List<HotelBriefDto> findAllHotels() {
-          return   hotelRepository.findAll()
-            .stream()
-                    .map(this::toBriefDto)
-                    .toList();
+        return hotelRepository.findAll()
+                .stream()
+                .map(hotelConverterService::toBriefDto)
+                .toList();
     }
-    //Перевод в dto для вывода основной информации
-    private HotelBriefDto toBriefDto(Hotel hotel) {
-        String address = formatAddress(hotel.getAddress());
-        return new HotelBriefDto(
-                hotel.getId(),
-                hotel.getName(),
-                hotel.getDescription(),
-                address,
-                hotel.getContacts()!=null ? hotel.getContacts().getPhone() : ""
-        );
-    }
-    //изменение вида адреса для краткого вывода
-    private String formatAddress(Address address) {
-        if(address == null) { return ""; }
-        return "%d %s, %s, %s, %s".formatted(
-                address.getHouseNumber(),
-                address.getStreet(),
-                address.getCity(),
-                address.getPostalCode(),
-                address.getCountry()
-        );
 
-    }
+    @Transactional(readOnly = true)
     public HotelDetailDto findHotelById(Long id) {
-
+        Hotel hotel = hotelRepository.findById(id).orElseThrow(
+                () -> new NotFoundException("hotel not found id:" + id));
+        return hotelConverterService.toDetailDto(hotel);
     }
 
+    @Transactional
+    public HotelBriefDto create(HotelCreateRequestDto req) {
+        Hotel hotel = Hotel.builder()
+                .name(req.name())
+                .description(req.description())
+                .brand(req.brand())
+                .address(new Address(
+                        req.address().houseNumber(),
+                        req.address().street(),
+                        req.address().city(),
+                        req.address().country(),
+                        req.address().postCode()))
+                .contacts(new Contacts(
+                        req.contacts().phone(),
+                        req.contacts().email()))
+                .arrivalTime(new ArrivalTime(
+                        req.arrivalTime().checkIn(),
+                         req.arrivalTime().checkOut()))
+                .build();
+        return hotelConverterService.toBriefDto(hotelRepository.save(hotel));
+    }
 
+    @Transactional
+    public void addAmenities(Long hotelId, Set<String> amenities) {
+        Hotel hotel= hotelRepository.findById(hotelId).orElseThrow(()->new NotFoundException("hotel not found id:" + hotelId));
+        Set<Amenity> amenitiesSet = amenities.stream()
+                .map(name -> amenityRepository.findAmenityByName(name)
+                        .orElseGet(() -> amenityRepository.save(
+                                Amenity.builder().name(name).build())))
+                .collect(Collectors.toSet());
+        hotel.addAllAmenities(amenitiesSet);
+        hotelRepository.save(hotel);
+    }
 }

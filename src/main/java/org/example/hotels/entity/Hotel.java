@@ -6,7 +6,7 @@ import java.util.HashSet;
 import java.util.Set;
 
 @Entity
-@Table(name="hotel")
+@Table(name = "hotel")
 public class Hotel {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -25,11 +25,25 @@ public class Hotel {
     private ArrivalTime arrivalTime;
     @ManyToMany()
     @JoinTable(
-            name="hotel-amenities",
+            name = "hotel-amenities",
             joinColumns = @JoinColumn(name = "hotel_id"),
-            inverseJoinColumns = @JoinColumn(name="amenity_id")
+            inverseJoinColumns = @JoinColumn(name = "amenity_id")
     )
-    private Set<Amenity> amenities= new HashSet<>();
+    private Set<Amenity> amenities = new HashSet<>();
+
+    public Hotel() {
+
+    }
+
+    private Hotel(HotelBuilder builder) {
+        this.name = builder.name;
+        this.description = builder.description;
+        this.brand = builder.brand;
+        this.contacts = builder.contacts;
+        this.arrivalTime = builder.arrivalTime;
+        this.address = builder.address;
+        this.amenities = new HashSet<>();
+    }
 
     public String getName() {
         return name;
@@ -86,7 +100,8 @@ public class Hotel {
     public void addAmenity(Amenity amenities) {
         this.amenities.add(amenities);
     }
-    public void setAmenities(Set<Amenity> amenities) {
+
+    public void addAllAmenities(Set<Amenity> amenities) {
         this.amenities.addAll(amenities);
     }
 
@@ -97,4 +112,53 @@ public class Hotel {
     public void setId(Long id) {
         this.id = id;
     }
+
+    public static HotelBuilder builder() {
+        return new HotelBuilder();
+    }
+
+    public static class HotelBuilder {
+        private String name;
+        private String description;
+        private String brand;
+        private Contacts contacts;
+        private ArrivalTime arrivalTime;
+        private Address address;
+
+
+        public HotelBuilder name(String name) {
+            this.name = name;
+            return this;
+        }
+
+        public HotelBuilder description(String description) {
+            this.description = description;
+            return this;
+        }
+
+        public HotelBuilder brand(String brand) {
+            this.brand = brand;
+            return this;
+        }
+
+        public HotelBuilder contacts(Contacts contacts) {
+            this.contacts = contacts;
+            return this;
+        }
+
+        public HotelBuilder arrivalTime(ArrivalTime arrivalTime) {
+            this.arrivalTime = arrivalTime;
+            return this;
+        }
+
+        public HotelBuilder address(Address address) {
+            this.address = address;
+            return this;
+        }
+
+        public Hotel build() {
+            return new Hotel(this);
+        }
+    }
 }
+
