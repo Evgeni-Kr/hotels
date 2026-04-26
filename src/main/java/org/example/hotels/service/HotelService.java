@@ -79,4 +79,17 @@ public class HotelService {
         hotel.addAllAmenities(amenitiesSet);
         hotelRepository.save(hotel);
     }
+    @Transactional(readOnly = true)
+    public List<HotelBriefDto> search(String name,
+                                String brand,
+                                String city,
+                                String country,
+                                List<String> amenities) {
+        int amenityCount = amenities.size();
+
+        return hotelRepository.findByFilters(name, brand, city, country, amenities,amenityCount)
+                .stream()
+                .map(hotelConverterService::toBriefDto)
+                .toList();
+    }
 }
