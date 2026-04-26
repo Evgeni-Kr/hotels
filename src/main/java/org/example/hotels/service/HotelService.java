@@ -85,7 +85,7 @@ public class HotelService {
                                 String city,
                                 String country,
                                 List<String> amenities) {
-        int amenityCount = amenities.size();
+        int amenityCount = amenities==null ? 0 : amenities.size();
 
         return hotelRepository.findByFilters(name, brand, city, country, amenities,amenityCount)
                 .stream()
