@@ -14,7 +14,7 @@ import java.util.List;
 @RequestMapping("/search")
 public class SearchController {
 
-     private HotelService hotelService;
+     private final HotelService hotelService;
     @Autowired
     public SearchController(HotelService hotelService) {
         this.hotelService = hotelService;

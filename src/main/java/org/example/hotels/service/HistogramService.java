@@ -9,7 +9,7 @@ import java.util.Map;
 @Service
 public class HistogramService {
 
-    private HotelRepository hotelRepository;
+    private final HotelRepository hotelRepository;
 
     @Autowired
     public HistogramService(HotelRepository hotelRepository) {
