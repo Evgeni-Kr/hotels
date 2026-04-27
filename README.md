@@ -6,3 +6,6 @@
 (POST)/property-view/hotels - creates new hotel
 (POST)/property-view/hotels/{id}/amenities - adds a list of amenities to a hotel by id.
 (GET) /property-view/histogram/{param} - gets the number of hotels grouped by each value of the specified parameter(brand, city, country, amenities).
+http://localhost:8092/property-view/swagger-ui/index.html -swagger documentation
+http://localhost:8092/property-view/api-docs
+port  - 8092
